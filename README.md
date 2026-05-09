@@ -1,31 +1,17 @@
 # Order Management Service
 
-A Spring Boot backend service for managing customers, products, and purchase orders using a clean layered architecture with controllers, services, repositories, DTOs, and centralized exception handling.
-
-## Overview
-
-This project is designed as a modular REST API for a basic order management domain. It currently focuses on three core business areas:
-
-- Customer management
-- Product management
-- Order management
-
-The codebase is organized to demonstrate common Spring Boot backend patterns such as:
-
-- Layered architecture
-- DTO-based API design
-- Spring Data JPA repositories
-- Centralized exception handling
-- JPA auditing support
+A Spring Boot REST API for managing customers, products, and purchase orders in an order management domain. The repository is organized into `customer`, `product`, `order`, and `common` packages under `com.acme.ordermanagement`, with dedicated controllers, DTOs, entities, repositories, and services for each module. [1]
 
 ## Tech Stack
 
-- Java
-- Spring Boot
-- Spring Data JPA
-- Hibernate
-- Maven Wrapper
-- REST APIs
+- Java 21 [1]
+- Spring Boot 3.5.14 [1]
+- Spring Web [1]
+- Spring Data JPA [1]
+- Spring Validation [1]
+- PostgreSQL [1]
+- Lombok [1]
+- Maven [1]
 
 ## Project Structure
 
@@ -33,12 +19,7 @@ The codebase is organized to demonstrate common Spring Boot backend patterns suc
 src/main/java/com/acme/ordermanagement
 ├── common
 │   ├── config
-│   │   └── JpaAuditConfig.java
 │   └── exception
-│       ├── ApiErrorResponse.java
-│       ├── GlobalExceptionHandler.java
-│       ├── ResourceAlreadyExistsException.java
-│       └── ResourceNotFoundException.java
 ├── customer
 │   ├── controller
 │   ├── dto
@@ -51,202 +32,174 @@ src/main/java/com/acme/ordermanagement
 │   ├── entity
 │   ├── repository
 │   └── service
-└── product
-    ├── controller
-    ├── dto
-    ├── entity
-    ├── repository
-    └── service
+├── product
+│   ├── controller
+│   ├── dto
+│   ├── entity
+│   ├── repository
+│   └── service
+└── OrderManagementServiceApplication.java
 ```
 
-## Current Features
+This structure shows a clean feature-based package layout, plus shared configuration and exception handling in the `common` module. [1]
 
-### Customer APIs
-- Create customer
-- Get customer by id
-- List customers
+## Features
 
-### Product APIs
-- Create product
-- Get product by id
-- List products
+- Create customers through `/api/customers`. [1]
+- Create products through `/api/products`. [1]
+- Create orders through `/api/orders`. [1]
+- Mark an order as paid through `/api/orders/{orderNumber}/pay`. [1]
+- Fetch order details through `/api/orders/{orderNumber}`. [1]
+- Fetch paginated orders by status through `/api/orders?status=...&page=...&size=...`. [1]
+- Fetch all orders for a customer through `/api/orders/customer/{customerId}`. [1]
+- Validate incoming payloads using Jakarta Bean Validation annotations in request DTOs. [1]
 
-### Order APIs
-- Create order
-- Get order by id
-- List orders
+## API Endpoints
 
-### Shared Backend Features
-- Global exception handling
-- Domain-specific exceptions
-- DTO-based request and response models
-- JPA auditing configuration
-
-## Architecture
-
-This project follows a standard layered architecture:
-
-- **Controller layer** handles HTTP requests and responses.
-- **Service layer** contains business logic and orchestration.
-- **Repository layer** manages persistence using Spring Data JPA.
-- **Entity layer** represents database models.
-- **DTO layer** separates API contracts from persistence models.
-
-This structure keeps the code maintainable, testable, and easy to extend.
-
-## Local Setup
-
-### Prerequisites
-
-Make sure the following are installed:
-
-- Java 17 or Java 21
-- Git
-
-Maven installation is optional because this project includes the Maven Wrapper.
-
-### Clone the Repository
-
-```bash
-git clone https://github.com/Venkat0629/order-management-service.git
-cd order-management-service
-```
-
-### Run the Application
-
-For Windows:
-
-```powershell
-mvnw.cmd spring-boot:run
-```
-
-For Linux or macOS:
-
-```bash
-./mvnw spring-boot:run
-```
-
-The application should start on:
-
-```text
-http://localhost:8080
-```
-
-## API Overview
-
-> Note: The exact endpoint mappings may vary depending on controller annotations. Update this section once controller mappings are finalized.
-
-### Customers
+### Customer API
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/customers` | Create a new customer |
-| GET | `/customers` | Get all customers |
-| GET | `/customers/{id}` | Get customer by id |
+|---|---|---|
+| POST | `/api/customers` | Create a new customer. [1] |
 
-### Products
+### Product API
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/products` | Create a new product |
-| GET | `/products` | Get all products |
-| GET | `/products/{id}` | Get product by id |
+|---|---|---|
+| POST | `/api/products` | Create a new product. [1] |
 
-### Orders
+### Order API
 
 | Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/orders` | Create a new order |
-| GET | `/orders` | Get all orders |
-| GET | `/orders/{id}` | Get order by id |
+|---|---|---|
+| POST | `/api/orders` | Create a new order. [1] |
+| PATCH | `/api/orders/{orderNumber}/pay` | Mark an order as paid. [1] |
+| GET | `/api/orders/{orderNumber}` | Get detailed order information. [1] |
+| GET | `/api/orders?status={status}&page={page}&size={size}` | Get paginated orders filtered by status. [1] |
+| GET | `/api/orders/customer/{customerId}` | Get all orders belonging to a customer. [1] |
 
-## Example Request Payloads
+## Request Payloads
 
 ### Create Customer
 
+`CreateCustomerRequest` defines two fields: `fullName` and `email`, and both are required, while `email` must also be in a valid email format. [1]
+
 ```json
 {
-  "name": "Sai Mane",
-  "email": "sai@example.com"
+  "fullName": "John Doe",
+  "email": "john.doe@example.com"
 }
 ```
 
 ### Create Product
 
+`CreateProductRequest` defines `sku`, `name`, `unitPrice`, and `availableQuantity`, where `unitPrice` must be greater than zero and `availableQuantity` cannot be negative. [1]
+
 ```json
 {
+  "sku": "SKU-1001",
   "name": "Wireless Mouse",
-  "price": 799.0,
-  "stockQuantity": 25
+  "unitPrice": 799.00,
+  "availableQuantity": 50
 }
 ```
 
 ### Create Order
+
+`CreateOrderRequest` defines `customerId` and `items`, and it requires at least one order item in the request. [1]
 
 ```json
 {
   "customerId": 1,
   "items": [
     {
-      "productId": 1,
+      "productId": 101,
       "quantity": 2
     }
   ]
 }
 ```
 
-## Error Handling
+The order request uses `List<OrderItemRequest>` for `items`, so each order item is expected to contain item-level product and quantity information. [1]
 
-The project uses centralized exception handling through a global exception handler. This helps return consistent error responses for common cases such as:
+## Build Configuration
 
-- Resource not found
-- Duplicate resource creation
-- Validation failures (recommended next improvement)
+The Maven build uses `spring-boot-starter-parent` version `3.5.14`, targets Java 21, and includes dependencies for Spring Web, Spring Data JPA, Validation, PostgreSQL, Lombok, and Spring Boot Test. [1]
 
-## Recommended Next Improvements
+## Running Locally
 
-### API Quality
-- Add request validation using Jakarta Bean Validation
-- Return proper HTTP status codes for all scenarios
-- Add pagination and filtering for list endpoints
-- Improve response consistency across modules
+### Prerequisites
 
-### Business Rules
-- Validate product stock before order creation
-- Support order status transitions
-- Add inventory update rules during order lifecycle changes
-- Strengthen domain constraints and uniqueness checks
+- Java 21 [1]
+- Maven 3.9+
+- PostgreSQL [1]
 
-### Testing
-- Add unit tests for services
-- Add controller tests using MockMvc
-- Add integration tests for persistence flows
-- Add negative test cases for exception scenarios
+### Clone and Run
 
-### Developer Experience
-- Add Swagger/OpenAPI documentation
-- Add a GitHub Actions workflow for build and test
-- Add Postman collection and environment files
-- Document database configuration clearly
+```bash
+git clone https://github.com/Venkat0629/order-management-service.git
+cd order-management-service
+mvn spring-boot:run
+```
 
-## Postman
+The application is configured to run on port `8080`. [1]
 
-A starter Postman collection can be used to test the APIs locally. It should include variables such as:
+## Database Configuration
 
-- `baseUrl`
-- `customerId`
-- `productId`
-- `orderId`
+The current `application.yaml` config uses PostgreSQL, enables `ddl-auto: update`, turns on SQL logging, and formats SQL output. [1]
 
-## Future Enhancements
+Example pattern:
 
-- Update order status through dedicated APIs
-- Retrieve orders by customer
-- Update product stock and price
-- Add pagination, sorting, and filtering
-- Improve reporting responses for order summaries
-- Add monitoring and production-oriented logging
+```yaml
+spring:
+  application:
+    name: order-management-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_management
+    username: your_username
+    password: your_password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+server:
+  port: 8080
+```
 
-## Why This Project Matters
+## Security Note
 
-This repository is a good backend portfolio project because it demonstrates practical Spring Boot fundamentals in a realistic business domain. With stronger validation, testing, API docs, and CI, it can become a strong interview-ready project for Java backend or full stack roles.
+The public repository currently exposes a PostgreSQL connection URL, username, and password in `application.yaml`, so those credentials should be rotated immediately and removed from version control. The safer pattern is to externalize them through environment variables or profile-specific local config. [1]
+
+Recommended replacement:
+
+```yaml
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+```
+
+## Implementation Notes
+
+- `CustomerController` accepts `CreateCustomerRequest` and returns `CustomerResponse`. [1]
+- `ProductController` accepts `CreateProductRequest` and returns `ProductResponse`. [1]
+- `OrderController` works with `CreateOrderRequest`, `OrderResponse`, `OrderDetailResponse`, `OrderSummaryResponse`, and `OrderStatus`. [1]
+- The codebase also includes `JpaAuditConfig`, `GlobalExceptionHandler`, `ResourceNotFoundException`, and `ResourceAlreadyExistsException`, which indicates the project already includes shared persistence and error-handling concerns. [1]
+
+## Suggested Next Improvements
+
+- Add Swagger/OpenAPI documentation.
+- Add Docker Compose for the app and PostgreSQL.
+- Add integration tests for controller and service layers.
+- Add sample seed data.
+- Add environment-specific profiles such as `application-dev.yaml` and `application-prod.yaml`.
+- Replace secrets in Git with environment variables immediately. [1]
+
+## Repository
+
+GitHub: [Venkat0629/order-management-service](https://github.com/Venkat0629/order-management-service) [1]
