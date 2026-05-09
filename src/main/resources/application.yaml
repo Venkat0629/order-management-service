@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: order-management-service
+  datasource:
+    url: jdbc:postgresql://ep-square-surf-apvszrqg-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+    username: neondb_owner
+    password: npg_DBAtNy5EMd0l
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 8080
